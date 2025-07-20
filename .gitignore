@@ -1,4 +1,5 @@
 # Miscellaneous
+lib/core/constants/.env
 *.class
 *.log
 *.pyc
