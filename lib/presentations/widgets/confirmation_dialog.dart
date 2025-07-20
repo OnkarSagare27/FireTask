@@ -36,81 +36,61 @@ class ConfirmationDialog extends StatelessWidget {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
-        return ConfirmationDialog(
-          title: title,
-          message: message,
-          confirmText: confirmText,
-          cancelText: cancelText,
-          onConfirm: onConfirm,
-          onCancel: onCancel,
-          isDestructive: isDestructive,
-          icon: icon,
-        );
-      },
+      builder: (context) => ConfirmationDialog(
+        title: title,
+        message: message,
+        confirmText: confirmText,
+        cancelText: cancelText,
+        onConfirm: onConfirm,
+        onCancel: onCancel,
+        isDestructive: isDestructive,
+        icon: icon,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return AlertDialog(
-      backgroundColor: colorScheme.surface,
-      surfaceTintColor: colorScheme.surfaceTint,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      contentPadding: const EdgeInsets.all(24),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDestructive
-                    ? colorScheme.errorContainer
-                    : colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: Icon(
-                icon,
-                size: 32,
-                color: isDestructive
-                    ? colorScheme.onErrorContainer
-                    : colorScheme.onPrimaryContainer,
-              ),
-            )
-          else if (isDestructive)
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorScheme.errorContainer,
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: Icon(
-                Icons.logout_outlined,
-                size: 32,
-                color: colorScheme.onErrorContainer,
-              ),
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: isDestructive
+                  ? Colors.red.withValues(alpha: 0.1)
+                  : theme.colorScheme.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(30),
             ),
+            child: Icon(
+              icon ?? (isDestructive ? Icons.logout : Icons.help_outline),
+              size: 28,
+              color: isDestructive ? Colors.red : theme.colorScheme.primary,
+            ),
+          ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
           Text(
             title,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
 
           Text(
             message,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
+              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
             ),
             textAlign: TextAlign.center,
           ),
@@ -120,23 +100,18 @@ class ConfirmationDialog extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
+                child: TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.pop(context);
                     onCancel?.call();
                   },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: colorScheme.onSurface,
-                    side: BorderSide(color: colorScheme.outline),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: Text(
-                    cancelText,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
+                  child: Text(cancelText),
                 ),
               ),
 
@@ -145,25 +120,22 @@ class ConfirmationDialog extends StatelessWidget {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.pop(context);
                     onConfirm();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isDestructive
-                        ? colorScheme.error
-                        : colorScheme.primary,
-                    foregroundColor: isDestructive
-                        ? colorScheme.onError
-                        : colorScheme.onPrimary,
-                    elevation: 0,
+                    backgroundColor: isDestructive ? Colors.red : null,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: Text(
                     confirmText,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: isDestructive ? Colors.white : null,
+                    ),
                   ),
                 ),
               ),
