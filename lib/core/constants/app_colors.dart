@@ -5,7 +5,7 @@ class AppColors {
   static const Color primaryPurpleDark = Color(0xFF4F46E5);
   static const Color lightPurple = Color(0xFF8B5CF6);
 
-  static const Color lightBackground = Color.fromARGB(229, 241, 245, 249);
+  static const Color lightBackground = Color.fromARGB(248, 241, 245, 249);
   static const Color lightSurface = Color(0xFFF8FAFC);
   static const Color lightCardBackground = Color(0xFFFFFFFF);
 

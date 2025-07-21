@@ -393,112 +393,130 @@ class _TasksScreenState extends State<TasksScreen>
       },
     );
   }
+Map<String, List<Task>> _groupTasksByDate(List<Task> tasks) {
+  final Map<String, List<Task>> grouped = {};
 
-  Widget _buildGroupedTasksList(List<Task> tasks) {
-    final Map<String, List<Task>> groupedTasks = _groupTasksByDate(tasks);
-    final List<String> sortedKeys = groupedTasks.keys.toList();
-
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      itemCount: _calculateTotalItems(groupedTasks),
-      itemBuilder: (context, index) {
-        int currentIndex = 0;
-
-        for (String dateKey in sortedKeys) {
-          if (currentIndex == index) {
-            return _buildDateHeader(dateKey);
-          }
-          currentIndex++;
-
-          final tasksInGroup = groupedTasks[dateKey]!;
-          if (index < currentIndex + tasksInGroup.length) {
-            final taskIndex = index - currentIndex;
-            final task = tasksInGroup[taskIndex];
-            return TaskTile(
-              task: task,
-              onTap: () => _showTaskDetails(context, task),
-              onEdit: () => _showTaskDialog(context, task),
-              onDelete: () =>
-                  context.read<TasksBloc>().add(DeleteTask(task.id)),
-              onToggleComplete: () => _toggleTaskCompletion(task),
-            );
-          }
-          currentIndex += tasksInGroup.length;
-        }
-
-        return const SizedBox.shrink();
-      },
-    );
-  }
-
-  Map<String, List<Task>> _groupTasksByDate(List<Task> tasks) {
-    final Map<String, List<Task>> grouped = {};
-
-    for (Task task in tasks) {
-      final String dateKey = _getDateGroupKey(task.dueDate);
-      if (!grouped.containsKey(dateKey)) {
-        grouped[dateKey] = [];
-      }
-      grouped[dateKey]!.add(task);
+  for (Task task in tasks) {
+    final String dateKey = _getDateGroupKey(task.dueDate);
+    if (!grouped.containsKey(dateKey)) {
+      grouped[dateKey] = [];
     }
-
-    final sortedEntries = grouped.entries.toList()
-      ..sort((a, b) {
-        final DateTime dateA = _parseDateKey(a.key);
-        final DateTime dateB = _parseDateKey(b.key);
-        return _sortOrder == SortOrder.ascending
-            ? dateA.compareTo(dateB)
-            : dateB.compareTo(dateA);
-      });
-
-    return Map.fromEntries(sortedEntries);
+    grouped[dateKey]!.add(task);
   }
 
-  String _getDateGroupKey(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final tomorrow = today.add(const Duration(days: 1));
-    final yesterday = today.subtract(const Duration(days: 1));
-    final taskDate = DateTime(date.year, date.month, date.day);
+  
+  final sortedEntries = grouped.entries.toList()
+    ..sort((a, b) {
+      final DateTime dateA = _parseDateKey(a.key);
+      final DateTime dateB = _parseDateKey(b.key);
+      
+      
+      return dateA.compareTo(dateB);
+    });
 
-    if (taskDate == today) {
-      return 'Today';
-    } else if (taskDate == tomorrow) {
-      return 'Tomorrow';
-    } else if (taskDate == yesterday) {
-      return 'Yesterday';
-    } else if (taskDate.isBefore(today)) {
-      return 'Overdue';
-    } else {
-      return '${date.day} ${_getMonthName(date.month)}, ${date.year}';
-    }
-  }
+  return Map.fromEntries(sortedEntries);
+}
 
-  DateTime _parseDateKey(String key) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+DateTime _parseDateKey(String key) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
 
-    switch (key) {
-      case 'Today':
+  switch (key) {
+    case 'Today':
+      return today;
+    case 'Tomorrow':
+      return today.add(const Duration(days: 1));
+    case 'Yesterday':
+      return today.subtract(const Duration(days: 1));
+    case 'Overdue':
+      
+      return DateTime(1900, 1, 1);
+    default:
+      try {
+        final parts = key.split(' ');
+        final day = int.parse(parts[0]);
+        final month = _getMonthNumber(parts[1].replaceAll(',', ''));
+        final year = int.parse(parts[2]);
+        return DateTime(year, month, day);
+      } catch (e) {
         return today;
-      case 'Tomorrow':
-        return today.add(const Duration(days: 1));
-      case 'Yesterday':
-        return today.subtract(const Duration(days: 1));
-      case 'Overdue':
-        return DateTime(1900);
-      default:
-        try {
-          final parts = key.split(' ');
-          final day = int.parse(parts[0]);
-          final month = _getMonthNumber(parts[1].replaceAll(',', ''));
-          final year = int.parse(parts[2]);
-          return DateTime(year, month, day);
-        } catch (e) {
-          return today;
-        }
-    }
+      }
   }
+}
+
+Widget _buildGroupedTasksList(List<Task> tasks) {
+  final Map<String, List<Task>> groupedTasks = _groupTasksByDate(tasks);
+  final List<String> sortedKeys = groupedTasks.keys.toList();
+
+  
+  int todayIndex = 0;
+  int currentIndex = 0;
+  
+  for (String dateKey in sortedKeys) {
+    if (dateKey == 'Today') {
+      todayIndex = currentIndex;
+      break;
+    }
+    currentIndex += 1 + (groupedTasks[dateKey]?.length ?? 0);
+  }
+
+  return ListView.builder(
+    padding: const EdgeInsets.symmetric(vertical: 16),
+    itemCount: _calculateTotalItems(groupedTasks),
+    
+    controller: ScrollController(
+      initialScrollOffset: todayIndex > 0 ? todayIndex * 80.0 : 0.0,
+    ),
+    itemBuilder: (context, index) {
+      int currentIndex = 0;
+
+      for (String dateKey in sortedKeys) {
+        if (currentIndex == index) {
+          return _buildDateHeader(dateKey);
+        }
+        currentIndex++;
+
+        final tasksInGroup = groupedTasks[dateKey]!;
+        if (index < currentIndex + tasksInGroup.length) {
+          final taskIndex = index - currentIndex;
+          final task = tasksInGroup[taskIndex];
+          return TaskTile(
+            task: task,
+            onTap: () => _showTaskDetails(context, task),
+            onEdit: () => _showTaskDialog(context, task),
+            onDelete: () =>
+                context.read<TasksBloc>().add(DeleteTask(task.id)),
+            onToggleComplete: () => _toggleTaskCompletion(task),
+          );
+        }
+        currentIndex += tasksInGroup.length;
+      }
+
+      return const SizedBox.shrink();
+    },
+  );
+}
+
+String _getDateGroupKey(DateTime date) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final tomorrow = today.add(const Duration(days: 1));
+  final yesterday = today.subtract(const Duration(days: 1));
+  final taskDate = DateTime(date.year, date.month, date.day);
+
+  if (taskDate == today) {
+    return 'Today';
+  } else if (taskDate == tomorrow) {
+    return 'Tomorrow';
+  } else if (taskDate == yesterday) {
+    return 'Yesterday';
+  } else if (taskDate.isBefore(today)) {
+    
+    return 'Overdue';
+  } else {
+    return '${date.day} ${_getMonthName(date.month)}, ${date.year}';
+  }
+}
 
   String _getMonthName(int month) {
     const months = [

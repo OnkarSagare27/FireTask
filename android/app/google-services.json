@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "6373756234",
+    "project_id": "firetask-adc4b",
+    "storage_bucket": "firetask-adc4b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:6373756234:android:880f0044925c81741945b3",
+        "android_client_info": {
+          "package_name": "com.onkarsagare.firetask"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqb-EFr4QXgCIcW-Q7X-s1DlVY5qcQ-Vs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
